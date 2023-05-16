@@ -1,5 +1,7 @@
 package com.example.kafkaconsumerservice.socket;
 
+import com.example.kafkaconsumerservice.model.UserOrder;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.stereotype.Component;
 import org.springframework.web.socket.CloseStatus;
 import org.springframework.web.socket.TextMessage;
@@ -7,18 +9,21 @@ import org.springframework.web.socket.WebSocketSession;
 import org.springframework.web.socket.handler.TextWebSocketHandler;
 
 import java.io.IOException;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 @Component
-public class ParkingSpotWebSocketHandler extends TextWebSocketHandler {
+public class ParkingWebSocketHandler extends TextWebSocketHandler {
+    private final CopyOnWriteArrayList<WebSocketSession> sessions = new CopyOnWriteArrayList<>();
+    private final ObjectMapper objectMapper;
 
-    //private final CopyOnWriteArrayList<WebSocketSession> sessions = new CopyOnWriteArrayList<>();
-    private final ConcurrentHashMap<WebSocketSession, Boolean> sessions = new ConcurrentHashMap<>();
+    public ParkingWebSocketHandler(ObjectMapper objectMapper) {
+        this.objectMapper = objectMapper;
+    }
+
 
     @Override
     public void afterConnectionEstablished(WebSocketSession session) throws Exception {
-        sessions.put(session, true);
+        sessions.add(session);
     }
 
     @Override
@@ -26,13 +31,14 @@ public class ParkingSpotWebSocketHandler extends TextWebSocketHandler {
         sessions.remove(session);
     }
 
-    public void sendParkingSpotUpdate(String message) {
-        for (WebSocketSession session : sessions.keySet()) {
+    public void sendPaymentDataUpdate(UserOrder paymentData) {
+        for (WebSocketSession session : sessions) {
             try {
-                session.sendMessage(new TextMessage(message));
+                session.sendMessage(new TextMessage(objectMapper.writeValueAsString(paymentData)));
             } catch (IOException e) {
                 e.printStackTrace();
             }
         }
     }
 }
+

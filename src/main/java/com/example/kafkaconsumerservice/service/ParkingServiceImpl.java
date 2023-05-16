@@ -1,8 +1,14 @@
 package com.example.kafkaconsumerservice.service;
 
+import com.example.kafkaconsumerservice.ParkingSpotNotFoundException;
+import com.example.kafkaconsumerservice.client.ParkingServiceClient;
+import com.example.kafkaconsumerservice.model.UserOrder;
 import com.example.kafkaconsumerservice.respository.ParkingSpotRepository;
 import com.example.kafkaconsumerservice.model.ParkingSpot;
+import com.example.kafkaconsumerservice.socket.ParkingWebSocketHandler;
+import com.example.kafkaconsumerservice.violation.ParkingViolationService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -18,6 +24,12 @@ public class ParkingServiceImpl implements ParkingService {
 //    @Autowired
 //    private ParkingViolationRepository parkingViolationRepository;
     private final ParkingSpotRepository parkingSpotRepository;
+    @Autowired
+    private ParkingViolationService parkingViolationService;
+    @Autowired
+    private ParkingWebSocketHandler parkingWebSocketHandler;
+//    @Autowired
+//    ParkingSpotWebSocketHandler parkingSpotWebSocketHandler;
 
     @Autowired
     public ParkingServiceImpl(ParkingSpotRepository parkingSpotRepository) {
@@ -41,22 +53,33 @@ public class ParkingServiceImpl implements ParkingService {
     }
 
     @Override
-    public ParkingSpot getParkingSpotById(String id) {
+    public ParkingSpot getParkingSpotById(Long id) {
         return parkingSpotRepository.findById(Long.valueOf(id)).orElse(null);
     }
 
+//    @Override
+//    public ParkingSpot updateParkingSpotStatus(String id, boolean isOccupied) {
+//        ParkingSpot parkingSpot = parkingSpotRepository.findById(Long.valueOf(id)).orElse(null);
+//
+//        if (parkingSpot != null) {
+//            parkingSpot.setOccupied(isOccupied);
+//            //parkingSpot.(LocalDateTime.now());
+//            return parkingSpotRepository.save(parkingSpot);
+//        }
+//        return null;
+//    }
+
     @Override
-    public ParkingSpot updateParkingSpotStatus(Long id, boolean isOccupied) {
+    public ParkingSpot startTimer(Long id, boolean isOccupied){
         ParkingSpot parkingSpot = parkingSpotRepository.findById(Long.valueOf(id)).orElse(null);
-        if (parkingSpot != null) {
+        if(parkingSpot.getIsOccupied() == true && parkingSpot.getCurrentUserId() == null){
+            parkingSpot.setStartTime(LocalDateTime.now());
             parkingSpot.setOccupied(isOccupied);
-            //parkingSpot.(LocalDateTime.now());
-            return parkingSpotRepository.save(parkingSpot);
         }
-        return null;
+        return parkingSpotRepository.save(parkingSpot);
     }
     @Override
-    public ParkingSpot startParkingSession(String id) {
+    public ParkingSpot startParkingSession(Long id, Long userId, String currentCarNumber) {
 //        ParkingSpot parkingSpot = parkingSpotRepository.findById(Long.valueOf(id)).orElse(null);
 //        if (parkingSpot != null) {
 //            parkingSpot.setStartTime(LocalDateTime.now());
@@ -64,20 +87,30 @@ public class ParkingServiceImpl implements ParkingService {
 //        }
 //        return null;
         ParkingSpot parkingSpot = parkingSpotRepository.findById(Long.valueOf(id)).orElse(null);
-        if (parkingSpot != null) {
-            parkingSpot.setStartTime(LocalDateTime.now());
+        if (parkingSpot != null && parkingSpot.getIsOccupied() && parkingSpot.getCurrentUserId() == null) {
+            parkingSpot.setCurrentUserId(userId);
+            parkingSpot.setCurrentCarNumber(currentCarNumber);
             return parkingSpotRepository.save(parkingSpot);
         }
-        return null;
+        throw new IllegalArgumentException("Parking spot is not available");
     }
     @Override
-    public ParkingSpot stopParkingSession(String id) {
+    public ParkingSpot stopParkingSession(Long id) {
         ParkingSpot parkingSpot = parkingSpotRepository.findById(Long.valueOf(id)).orElse(null);
-        if (parkingSpot != null) {
+        if (parkingSpot != null && parkingSpot.getCurrentUserId() != null) {
             parkingSpot.setEndTime(LocalDateTime.now());
+            ParkingServiceClient client = new ParkingServiceClient();
+            client.addParkingHistory(parkingSpot);
+            //parkingSpotWebSocketHandler.sendParkingSpotUpdate(objectMapper.writeValueAsString(parkingSpot));
+            //Set history
+            //reset all values
+            //сокет с историей парковок
+            UserOrder userOrder = new UserOrder(parkingSpot.getSpotNumber(), parkingSpot.getStartTime(), parkingSpot.getEndTime());
+            parkingWebSocketHandler.sendPaymentDataUpdate(userOrder);
+            parkingSpot.resetParkingOccupancy();
             return parkingSpotRepository.save(parkingSpot);
         }
-        return null;
+        throw new RuntimeException("User with this phone number already exists");
     }
 
 //    @Override
@@ -104,6 +137,14 @@ public class ParkingServiceImpl implements ParkingService {
 
         return nearbyAvailableSpots;
     }
+
+    @Override
+    public void deleteParkingSpot(Long id) {
+        ParkingSpot parkingSpot = parkingSpotRepository.findById(id)
+                .orElseThrow(() -> new ParkingSpotNotFoundException("User not found with id: " + id));
+        parkingSpotRepository.delete(parkingSpot);
+    }
+
     private static double calculateDistance(double lat1, double lon1, double lat2, double lon2) {
         double earthRadius = 6371e3; // радиус Земли в метрах
         double lat1Radians = Math.toRadians(lat1);
@@ -118,59 +159,44 @@ public class ParkingServiceImpl implements ParkingService {
 
         return earthRadius * c;
     }
+    @Scheduled(fixedDelay = 60 * 1000) // Каждую минуту
+    public void checkForSpotViolations() { // проверка занятости
+        List<ParkingSpot> parkingSpots = getAllParkingSpots();
+        for (ParkingSpot spot : parkingSpots) {
+            if (spot.getIsOccupied() && spot.getCurrentUserId() == null && spot.getStartTime().plusMinutes(15).isBefore(LocalDateTime.now())) {
+                // Нарушение - место занято, но пользователь не зарегистрирован
+//                LocalDateTime now = LocalDateTime.now();
+//                Duration duration = Duration.between(spot.getStartTime(), now);
+                spot.setViolation(true);
+                //тут сокет для регулировщика
 
-//    @Override
-//    public List<ParkingHistory> getParkingHistory(long userId) {
-//        return parkingHistoryRepository.findByUserId(userId);
-//    }
-//
-//    @Override
-//    public List<ParkingViolation> getViolations(long userId) {
-//        return parkingViolationRepository.findByUserId(userId);
-//    }
-//
-//    @Override
-//    public boolean payParkingFee(long parkingSpotId, PaymentMethod paymentMethod) {
-//        // Здесь вы можете интегрировать сервис оплаты и обработать оплату.
-//        // Если оплата успешна, обновите информацию о парковке и верните true.
-//        // В противном случае верните false.
-//        return false; // временная заглушка
-//    }
+//                parkingSpotRepository.save(spot);
+//                if (duration.toMinutes() >= 15) {
+//                    parkingViolationService.addViolation(spot);
+//                }
+//            } else if (!spot.getIsOccupied() && spot) {
+//                // Проверяем, оплачено ли парковочное место
+//                PaymentData paymentData = paymentService.getPaymentDataForUser(spot.getCurrentUserId());
+//                if (paymentData != null && !paymentData.isPaid() && spot.getEndTime().plusMinutes(15).isBefore(LocalDateTime.now())) {
+//                    // Нарушение - оплата не была произведена в течение 15 минут после окончания сессии
+//                    parkingViolationService.addViolation(spot);
+//                }
+//              }
+            }
+        }
+    }
+    @Scheduled(cron = "0 0 0 * * *") // Каждые сутки
+    public void checkForPaymentViolations() { // проверка оплаты
+        ParkingServiceClient parkingServiceClient = new ParkingServiceClient();
+        //parkingServiceClient.getUser();
+        //getAllUser
+        List<ParkingSpot> parkingSpots = getAllParkingSpots();
+
+        for (ParkingSpot spot : parkingSpots) {
+            if (spot.getIsOccupied() && spot.getCurrentUserId() != null && spot.getEndTime().plusMinutes(15).isBefore(LocalDateTime.now())) {
+                // Нарушение - место занято, но пользователь не зарегистрирован
+                parkingViolationService.addPaymentViolation(spot);
+            }
+        }
+    }
 }
-
-//@Service
-//public class ParkingServiceImpl implements ParkingService {
-//    // Используйте HashMap для хранения и обработки данных о парковочных местах
-//    private Map<Long, ParkingSpot> parkingSpots;
-//
-//    public ParkingServiceImpl() {
-//        parkingSpots = new HashMap<>();
-//
-//        // Заполните парковочные места тестовыми данными
-//        parkingSpots.put(1L, new ParkingSpot("S001", 55.759132, 37.705266));
-//        //parkingSpots.put(2L, new ParkingSpot("S002", 49.8429, 24.0313));
-//        //parkingSpots.put(3L, new ParkingSpot("S003", 49.8432, 24.0265));
-//    }
-//
-//    @Override
-//    public List<ParkingSpot> getAllParkingSpots() {
-//        return new ArrayList<>(parkingSpots.values());
-//    }
-//
-//    @Override
-//    public ParkingSpot getParkingSpotById(String id) {
-//        return parkingSpots.get(id);
-//    }
-//
-//    @Override
-//    public ParkingSpot updateParkingSpotStatus(String id, boolean isOccupied) {
-//        ParkingSpot parkingSpot = parkingSpots.get(id);
-//
-//        if (parkingSpot != null) {
-//            parkingSpot.setOccupied(isOccupied);
-//            parkingSpot.setTimestamp(LocalDateTime.now());
-//        }
-//
-//        return parkingSpot;
-//    }
-//}

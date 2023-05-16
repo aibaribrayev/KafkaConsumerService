@@ -24,8 +24,11 @@ public class ParkingSpot {
     private double latitude;
     @Column(name = "longitude")
     private double longitude;
-//    @Column(name = "current_user_id")
-//    private Long currentUserId;
+    @Column(name = "current_user_id")
+    private Long currentUserId;
+    @Column(name = "current_car_number")
+    private String currentCarNumber;
+    private boolean violation;
 
 
     public ParkingSpot() {
@@ -87,16 +90,39 @@ public class ParkingSpot {
         this.sensorId = sensorId;
     }
 
-//    public Long getCurrentUserId() {
-//        return currentUserId;
-//    }
-//
-//    public void setCurrentUserId(Long currentUserId) {
-//        this.currentUserId = currentUserId;
-//    }
+    public Long getCurrentUserId() {
+        return currentUserId;
+    }
+
+    public void setCurrentUserId(Long currentUserId) {
+        this.currentUserId = currentUserId;
+    }
 
     @Override
     public String toString() {
         return "Parking spot "+spotNumber+" with sensor id "+sensorId+ " occupancy "+isOccupied;
+    }
+
+    public void resetParkingOccupancy(){
+        this.currentUserId = null;
+        this.endTime = null;
+        this.startTime = null;
+        violation = false;
+    }
+
+    public String getSpotNumber() {
+        return spotNumber;
+    }
+
+    public void setViolation(boolean violation) {
+        this.violation = violation;
+    }
+
+    public String getCurrentCarNumber() {
+        return currentCarNumber;
+    }
+
+    public void setCurrentCarNumber(String currentCarNumber) {
+        this.currentCarNumber = currentCarNumber;
     }
 }

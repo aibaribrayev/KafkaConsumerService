@@ -33,17 +33,22 @@ public class ParkingSpotController {
         return ResponseEntity.created(URI.create("/parking-spots/" + savedSpot.getId()))
                 .body(savedSpot);
     }
-    @PutMapping("/{id}")
-    public ParkingSpot updateParkingSpotStatus(@PathVariable Long id, @RequestParam boolean isOccupied) {
-        // Обработка ошибки, если парковочное место не найдено
-        //ParkingSpot parkingSpot = parkingService.getParkingSpotById(id).(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Parking spot not found"));
-        return parkingService.updateParkingSpotStatus(id, isOccupied);
-    }
+//    @PutMapping("/{id}")
+//    public ParkingSpot updateParkingSpotStatusToUp(@PathVariable String id, @RequestParam boolean isOccupied) {
+//        // Обработка ошибки, если парковочное место не найдено
+//        //ParkingSpot parkingSpot = parkingService.getParkingSpotById(id).(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Parking spot not found"));
+//        ParkingSpot parkingSpot = parkingService.getParkingSpotById(id);
+//        if(parkingSpot.getIsOccupied() == true && parkingSpot.getCurrentUserId() == null){
+//            parkingSpot.setStartTime(LocalDateTime.now());
+//        }
+//        return parkingService.updateParkingSpotStatus(id, isOccupied);
+//    }
 
 //    @GetMapping("/sensor/{id}]")
 //    public ParkingSpot getParkingSpotBySensorId(@PathVariable String id) {
 //        return parkingService.getParkingSpotBySensorId(id);
 //    }
+
     @GetMapping("/sensor/{sensorId}")
     public ResponseEntity<ParkingSpot> getParkingSpotBySensorId(@PathVariable String sensorId) {
         ParkingSpot parkingSpot = parkingService.getParkingSpotBySensorId(sensorId);
@@ -53,32 +58,37 @@ public class ParkingSpotController {
         return ResponseEntity.ok(parkingSpot);
     }
 
+    @PostMapping("/delete/{id}")
+    public void deleteParkingSpot(@PathVariable Long id) {
+        parkingService.deleteParkingSpot(id);
+    }
+
     @GetMapping
     public List<ParkingSpot> getAllParkingSpots() {
         return parkingService.getAllParkingSpots();
     }
 
     @GetMapping("/{id}")
-    public ParkingSpot getParkingSpotById(@PathVariable String id) {
+    public ParkingSpot getParkingSpotById(@PathVariable Long id) {
         // Обработка ошибки, если парковочное место не найдено
         return parkingService.getParkingSpotById(id);//.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Parking spot not found"));
     }
 
     @PostMapping("/{id}/start-session")
-    public ParkingSpot startParkingSession(@PathVariable String id) {
+    public ParkingSpot startParkingSession(@PathVariable Long id, @RequestParam Long userId, @RequestParam String currentCarNumber) {
         // Обработка ошибки, если парковочное место не найдено
         ParkingSpot parkingSpot = parkingService.getParkingSpotById(id);
         if (parkingSpot == null) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Parking spot not found");
         }
-        return parkingService.startParkingSession(id);
+        return parkingService.startParkingSession(id, userId, currentCarNumber);
     }
 
     @PostMapping("/{id}/stop-session")
-    public ParkingSpot stopParkingSession(@PathVariable String id) {
+    public ParkingSpot stopParkingSession(@PathVariable Long id) {
         // Обработка ошибки, если парковочное место не найдено
         ParkingSpot parkingSpot = parkingService.getParkingSpotById(id);
-        if (parkingSpot == null) {
+        if (parkingSpot == null || parkingSpot.getCurrentUserId() == null) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Parking spot not found");
         }
         parkingSpot.setEndTime(LocalDateTime.now());

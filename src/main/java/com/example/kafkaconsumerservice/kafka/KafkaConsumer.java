@@ -16,8 +16,8 @@ import java.time.LocalDateTime;
 public class KafkaConsumer {
     @Autowired
     private ParkingService parkingService;
-    //@Autowired
-    //private ParkingSpotWebSocketHandler parkingSpotWebSocketHandler;
+    @Autowired
+    private ParkingSpotWebSocketHandler parkingSpotWebSocketHandler;
     @KafkaListener(topics = "parking-sensor-topic", groupId = "parking-sensor-group")
     public void consume(String message) throws Exception {
         ObjectMapper objectMapper = new ObjectMapper();
@@ -30,22 +30,18 @@ public class KafkaConsumer {
         ParkingSpot parkingSpot = parkingService.getParkingSpotBySensorId(parkingSensor.getSensorId());
         // Обновляем состояние парковочного места
         System.out.println(parkingSpot.toString());
-        parkingSpot.setOccupied(parkingSensor.getIsOccupied());
+        if(parkingSpot.getIsOccupied() != parkingSensor.getIsOccupied() && parkingSensor.getIsOccupied() == true){
+            parkingSpot.setOccupied(parkingSensor.getIsOccupied());
+            // Сохраняем обновленное состояние парковочного места
+            parkingService.startTimer(parkingSpot.getId(), parkingSensor.getIsOccupied());
+        } else if (parkingSpot.getIsOccupied() != parkingSensor.getIsOccupied() && parkingSensor.getIsOccupied() == false) {
+            parkingSpot.setOccupied(parkingSensor.getIsOccupied());
+            parkingService.stopParkingSession(parkingSpot.getId());
+        }
         System.out.println("Data from postgre: "+ parkingSpot);
-//        if(parkingSpot.getIsOccupied() == true) {
-//            if (parkingSpot.getCurrentUserId() == null) {
-//                parkingSpot.setStartTime(LocalDateTime.now());
-//            }
-//        }
-//        else{
-//            if(parkingSpot.getCurrentUserId() != null){
-//                parkingService.stopParkingSession(parkingSpot.getId().toString());
-//            }
-//        }
-        // Сохраняем обновленное состояние парковочного места
-        parkingService.updateParkingSpotStatus(parkingSpot.getId(), parkingSensor.getIsOccupied());
+
         // Отправляем обновленное состояние парковочного места через веб-сокеты
-        //parkingSpotWebSocketHandler.sendParkingSpotUpdate(objectMapper.writeValueAsString(parkingSpot));
+        parkingSpotWebSocketHandler.sendParkingSpotUpdate(objectMapper.writeValueAsString(parkingSpot));
     }
 }
 
