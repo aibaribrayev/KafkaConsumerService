@@ -28,7 +28,7 @@ public class ParkingSpot {
     private Long currentUserId;
     @Column(name = "current_car_number")
     private String currentCarNumber;
-    private boolean violation;
+    //private boolean violation;
 
 
     public ParkingSpot() {
@@ -107,16 +107,16 @@ public class ParkingSpot {
         this.currentUserId = null;
         this.endTime = null;
         this.startTime = null;
-        violation = false;
+        isOccupied = false;
     }
 
     public String getSpotNumber() {
         return spotNumber;
     }
 
-    public void setViolation(boolean violation) {
-        this.violation = violation;
-    }
+//    public void setViolation(boolean violation) {
+//        this.violation = violation;
+//    }
 
     public String getCurrentCarNumber() {
         return currentCarNumber;

@@ -31,14 +31,12 @@ public class KafkaConsumer {
         // Обновляем состояние парковочного места
         System.out.println(parkingSpot.toString());
         if(parkingSpot.getIsOccupied() != parkingSensor.getIsOccupied() && parkingSensor.getIsOccupied() == true){
-            parkingSpot.setOccupied(parkingSensor.getIsOccupied());
             // Сохраняем обновленное состояние парковочного места
             parkingService.startTimer(parkingSpot.getId(), parkingSensor.getIsOccupied());
         } else if (parkingSpot.getIsOccupied() != parkingSensor.getIsOccupied() && parkingSensor.getIsOccupied() == false) {
-            parkingSpot.setOccupied(parkingSensor.getIsOccupied());
             parkingService.stopParkingSession(parkingSpot.getId());
         }
-        System.out.println("Data from postgre: "+ parkingSpot);
+        //System.out.println("Data from postgre: "+ parkingSpot);
 
         // Отправляем обновленное состояние парковочного места через веб-сокеты
         parkingSpotWebSocketHandler.sendParkingSpotUpdate(objectMapper.writeValueAsString(parkingSpot));

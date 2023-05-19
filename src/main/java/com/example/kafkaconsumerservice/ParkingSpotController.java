@@ -29,6 +29,9 @@ public class ParkingSpotController {
 
     @PostMapping("/new")
     public ResponseEntity<ParkingSpot> createParkingSpot(@RequestBody ParkingSpot parkingSpot) {
+        if(parkingService.getParkingSpotBySensorId(parkingSpot.getSensorId()) != null){
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Parking spot already exists");
+        }
         ParkingSpot savedSpot = parkingService.addParkingSpot(parkingSpot);
         return ResponseEntity.created(URI.create("/parking-spots/" + savedSpot.getId()))
                 .body(savedSpot);

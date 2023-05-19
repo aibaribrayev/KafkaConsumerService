@@ -8,7 +8,7 @@ import java.io.IOException;
 import java.time.LocalDateTime;
 
 public class ParkingServiceClient {
-    private static final String BASE_URL = "http://localhost:8080";
+    private static final String BASE_URL = "http://209.38.249.233:8080";
 
     private final OkHttpClient httpClient;
 
@@ -77,19 +77,29 @@ public class ParkingServiceClient {
             return;
         }
 
-        RequestBody body = new MultipartBody.Builder()
-                .setType(MultipartBody.FORM)
-                .addFormDataPart("parkingSpotNumber", parkingSpot.getSpotNumber())
-                .addFormDataPart("carNumber", parkingSpot.getCurrentCarNumber())
-                .addFormDataPart("startTime", String.valueOf(parkingSpot.getStartTime()))
-                .addFormDataPart("endTime", String.valueOf(parkingSpot.getEndTime()))
-                .addFormDataPart("price", String.valueOf(price))
-                .addFormDataPart("isPaid", "false")
-                .build();
+//        RequestBody body = new MultipartBody.Builder()
+//                .setType(MultipartBody.FORM)
+//                .addFormDataPart("parkingSpotNumber", parkingSpot.getSpotNumber())
+//                .addFormDataPart("startTime", String.valueOf(parkingSpot.getStartTime()))
+//                .addFormDataPart("endTime", String.valueOf(parkingSpot.getEndTime()))
+//                .addFormDataPart("price", String.valueOf(price))
+//                .addFormDataPart("carNumber", parkingSpot.getCurrentCarNumber())
+//                .addFormDataPart("paid", "false")
+//                .build();
+        MediaType mediaType = MediaType.parse("application/json");
+        RequestBody body = RequestBody.create(mediaType, "{"
+                + "\"parkingSpotNumber\": \"" + parkingSpot.getSpotNumber() + "\","
+                + "\"startTime\": \"" + parkingSpot.getStartTime() + "\","
+                + "\"endTime\": \"" + parkingSpot.getEndTime() + "\","
+                + "\"price\": \"" + price + "\","
+                + "\"carNumber\": \"" + parkingSpot.getCurrentCarNumber() + "\","
+                + "\"paid\": false"
+                + "}");
 
         Request request = new Request.Builder()
                 .url(url)
                 .post(body)
+                .addHeader("Content-Type", "application/json")
                 .build();
         Call call = httpClient.newCall(request);
         call.enqueue(new Callback() {

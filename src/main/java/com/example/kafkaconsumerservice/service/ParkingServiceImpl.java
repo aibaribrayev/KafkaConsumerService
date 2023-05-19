@@ -72,9 +72,9 @@ public class ParkingServiceImpl implements ParkingService {
     @Override
     public ParkingSpot startTimer(Long id, boolean isOccupied){
         ParkingSpot parkingSpot = parkingSpotRepository.findById(Long.valueOf(id)).orElse(null);
-        if(parkingSpot.getIsOccupied() == true && parkingSpot.getCurrentUserId() == null){
+        if(isOccupied && parkingSpot.getCurrentUserId() == null){
             parkingSpot.setStartTime(LocalDateTime.now());
-            parkingSpot.setOccupied(isOccupied);
+            parkingSpot.setOccupied(true);
         }
         return parkingSpotRepository.save(parkingSpot);
     }
@@ -87,7 +87,7 @@ public class ParkingServiceImpl implements ParkingService {
 //        }
 //        return null;
         ParkingSpot parkingSpot = parkingSpotRepository.findById(Long.valueOf(id)).orElse(null);
-        if (parkingSpot != null && parkingSpot.getIsOccupied() && parkingSpot.getCurrentUserId() == null) {
+        if (parkingSpot != null && parkingSpot.getIsOccupied() == true && parkingSpot.getCurrentUserId() == null) {
             parkingSpot.setCurrentUserId(userId);
             parkingSpot.setCurrentCarNumber(currentCarNumber);
             return parkingSpotRepository.save(parkingSpot);
@@ -167,7 +167,7 @@ public class ParkingServiceImpl implements ParkingService {
                 // Нарушение - место занято, но пользователь не зарегистрирован
 //                LocalDateTime now = LocalDateTime.now();
 //                Duration duration = Duration.between(spot.getStartTime(), now);
-                spot.setViolation(true);
+                //spot.setViolation(true);
                 //тут сокет для регулировщика
 
 //                parkingSpotRepository.save(spot);
