@@ -2,7 +2,7 @@ package com.example.kafkaconsumerservice.service;
 
 import com.example.kafkaconsumerservice.ParkingSpotNotFoundException;
 import com.example.kafkaconsumerservice.client.ParkingServiceClient;
-import com.example.kafkaconsumerservice.model.UserOrder;
+import com.example.kafkaconsumerservice.model.ParkingSession;
 import com.example.kafkaconsumerservice.respository.ParkingSpotRepository;
 import com.example.kafkaconsumerservice.model.ParkingSpot;
 import com.example.kafkaconsumerservice.socket.ParkingWebSocketHandler;
@@ -105,12 +105,11 @@ public class ParkingServiceImpl implements ParkingService {
             //Set history
             //reset all values
             //сокет с историей парковок
-            UserOrder userOrder = new UserOrder(parkingSpot.getSpotNumber(), parkingSpot.getStartTime(), parkingSpot.getEndTime());
-            parkingWebSocketHandler.sendPaymentDataUpdate(userOrder);
-            parkingSpot.resetParkingOccupancy();
-            return parkingSpotRepository.save(parkingSpot);
+            ParkingSession parkingSession = new ParkingSession(parkingSpot.getSpotNumber(), parkingSpot.getStartTime(), parkingSpot.getEndTime());
+            parkingWebSocketHandler.sendPaymentDataUpdate(parkingSession);
         }
-        throw new RuntimeException("User with this phone number already exists");
+        parkingSpot.resetParkingOccupancy();
+        return parkingSpotRepository.save(parkingSpot);
     }
 
 //    @Override

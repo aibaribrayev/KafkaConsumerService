@@ -107,6 +107,7 @@ public class ParkingSpot {
         this.currentUserId = null;
         this.endTime = null;
         this.startTime = null;
+        this.currentCarNumber = null;
         isOccupied = false;
     }
 

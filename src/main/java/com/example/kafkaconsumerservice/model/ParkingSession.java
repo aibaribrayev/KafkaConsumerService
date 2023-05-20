@@ -6,7 +6,7 @@ import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "parking_history")
-public class UserOrder {
+public class ParkingSession {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -24,7 +24,7 @@ public class UserOrder {
     @Column
     private boolean isPaid;
 
-    public UserOrder(String parkingSpotNumber, LocalDateTime startTime, LocalDateTime endTime){
+    public ParkingSession(String parkingSpotNumber, LocalDateTime startTime, LocalDateTime endTime){
         this.parkingSpotNumber = parkingSpotNumber;
         this.startTime = startTime;
         this.endTime = endTime;

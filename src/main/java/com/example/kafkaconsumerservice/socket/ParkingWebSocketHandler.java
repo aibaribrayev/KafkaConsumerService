@@ -1,6 +1,6 @@
 package com.example.kafkaconsumerservice.socket;
 
-import com.example.kafkaconsumerservice.model.UserOrder;
+import com.example.kafkaconsumerservice.model.ParkingSession;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.stereotype.Component;
 import org.springframework.web.socket.CloseStatus;
@@ -31,7 +31,7 @@ public class ParkingWebSocketHandler extends TextWebSocketHandler {
         sessions.remove(session);
     }
 
-    public void sendPaymentDataUpdate(UserOrder paymentData) {
+    public void sendPaymentDataUpdate(ParkingSession paymentData) {
         for (WebSocketSession session : sessions) {
             try {
                 session.sendMessage(new TextMessage(objectMapper.writeValueAsString(paymentData)));
