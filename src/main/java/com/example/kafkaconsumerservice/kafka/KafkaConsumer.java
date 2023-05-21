@@ -23,7 +23,6 @@ public class KafkaConsumer {
         ObjectMapper objectMapper = new ObjectMapper();
         ParkingSensor parkingSensor = objectMapper.readValue(message, ParkingSensor.class);
 
-
         System.out.println("Received parking sensor data: " + parkingSensor.toString());
 
         //parkingSpotWebSocketHandler.sendParkingSpotUpdate(message);
