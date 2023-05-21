@@ -1,6 +1,7 @@
 package com.example.kafkaconsumerservice.socket;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Configuration;
 import org.springframework.messaging.simp.config.MessageBrokerRegistry;
 import org.springframework.stereotype.Service;
 import org.springframework.web.socket.config.annotation.StompEndpointRegistry;
@@ -9,6 +10,7 @@ import org.springframework.web.socket.config.annotation.WebSocketHandlerRegistry
 import org.springframework.web.socket.config.annotation.WebSocketMessageBrokerConfigurer;
 
 @Service
+@Configuration
 public class WebSocketConfiguration implements WebSocketConfigurer, WebSocketMessageBrokerConfigurer {
     @Autowired
     private ParkingSpotWebSocketHandler parkingSpotWebSocketHandler;

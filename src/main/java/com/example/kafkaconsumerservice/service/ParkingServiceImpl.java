@@ -18,18 +18,11 @@ import java.util.List;
 @Service
 public class ParkingServiceImpl implements ParkingService {
 
-//    @Autowired
-//    private ParkingHistoryRepository parkingHistoryRepository;
-//
-//    @Autowired
-//    private ParkingViolationRepository parkingViolationRepository;
     private final ParkingSpotRepository parkingSpotRepository;
     @Autowired
     private ParkingViolationService parkingViolationService;
     @Autowired
     private ParkingWebSocketHandler parkingWebSocketHandler;
-//    @Autowired
-//    ParkingSpotWebSocketHandler parkingSpotWebSocketHandler;
 
     @Autowired
     public ParkingServiceImpl(ParkingSpotRepository parkingSpotRepository) {
@@ -57,18 +50,6 @@ public class ParkingServiceImpl implements ParkingService {
         return parkingSpotRepository.findById(Long.valueOf(id)).orElse(null);
     }
 
-//    @Override
-//    public ParkingSpot updateParkingSpotStatus(String id, boolean isOccupied) {
-//        ParkingSpot parkingSpot = parkingSpotRepository.findById(Long.valueOf(id)).orElse(null);
-//
-//        if (parkingSpot != null) {
-//            parkingSpot.setOccupied(isOccupied);
-//            //parkingSpot.(LocalDateTime.now());
-//            return parkingSpotRepository.save(parkingSpot);
-//        }
-//        return null;
-//    }
-
     @Override
     public ParkingSpot startTimer(Long id, boolean isOccupied){
         ParkingSpot parkingSpot = parkingSpotRepository.findById(Long.valueOf(id)).orElse(null);
@@ -80,12 +61,6 @@ public class ParkingServiceImpl implements ParkingService {
     }
     @Override
     public ParkingSpot startParkingSession(Long id, Long userId, String currentCarNumber) {
-//        ParkingSpot parkingSpot = parkingSpotRepository.findById(Long.valueOf(id)).orElse(null);
-//        if (parkingSpot != null) {
-//            parkingSpot.setStartTime(LocalDateTime.now());
-//            return parkingSpotRepository.save(parkingSpot);
-//        }
-//        return null;
         ParkingSpot parkingSpot = parkingSpotRepository.findById(Long.valueOf(id)).orElse(null);
         if (parkingSpot != null && parkingSpot.getIsOccupied() == true && parkingSpot.getCurrentUserId() == null) {
             parkingSpot.setCurrentUserId(userId);
@@ -111,15 +86,6 @@ public class ParkingServiceImpl implements ParkingService {
         parkingSpot.resetParkingOccupancy();
         return parkingSpotRepository.save(parkingSpot);
     }
-
-//    @Override
-//    public double calculateParkingFee(String id, LocalDateTime startTime, LocalDateTime endTime) {
-//        // Реализуйте расчет стоимости парковки в зависимости от времени начала и окончания.
-//        // Например, вы можете использовать фиксированную ставку за час.
-//        double hourlyRate = 2.0;
-//        long parkingDuration = Duration.between(startTime, endTime).toHours();
-//        return hourlyRate * parkingDuration;
-//    }
     @Override
     public List<ParkingSpot> getNearbyAvailableSpots(double latitude, double longitude, double radius) {
         List<ParkingSpot> allSpots = parkingSpotRepository.findAll();
@@ -199,3 +165,24 @@ public class ParkingServiceImpl implements ParkingService {
         }
     }
 }
+
+//    @Override
+//    public ParkingSpot updateParkingSpotStatus(String id, boolean isOccupied) {
+//        ParkingSpot parkingSpot = parkingSpotRepository.findById(Long.valueOf(id)).orElse(null);
+//
+//        if (parkingSpot != null) {
+//            parkingSpot.setOccupied(isOccupied);
+//            //parkingSpot.(LocalDateTime.now());
+//            return parkingSpotRepository.save(parkingSpot);
+//        }
+//        return null;
+//    }
+
+//    @Override
+//    public double calculateParkingFee(String id, LocalDateTime startTime, LocalDateTime endTime) {
+//        // Реализуйте расчет стоимости парковки в зависимости от времени начала и окончания.
+//        // Например, вы можете использовать фиксированную ставку за час.
+//        double hourlyRate = 2.0;
+//        long parkingDuration = Duration.between(startTime, endTime).toHours();
+//        return hourlyRate * parkingDuration;
+//    }

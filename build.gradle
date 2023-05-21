@@ -25,16 +25,17 @@ dependencies {
     implementation 'com.squareup.okhttp3:okhttp:4.9.3'
     implementation 'javax.persistence:javax.persistence-api:2.2'
     implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.0.4'
-    implementation 'io.grpc:grpc-all:1.40.1'
+    implementation 'io.grpc:grpc-all:1.54.1'
 }
 
 protobuf {
     protoc {
-        artifact = 'com.google.protobuf:protoc:3.17.3'
+        artifact = "com.google.protobuf:protoc:3.17.3"
     }
     plugins {
         grpc {
-            artifact = 'io.grpc:protoc-gen-grpc-java:1.40.1'
+            // Use the x86_64 version for Apple Silicon
+            artifact = 'io.grpc:protoc-gen-grpc-java:1.40.1-osx-x86_64'
         }
     }
     generateProtoTasks {
