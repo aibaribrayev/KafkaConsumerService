@@ -9,6 +9,5 @@ import java.util.Optional;
 @Repository
 public interface ParkingSpotRepository extends JpaRepository<ParkingSpot, Long> {
     ParkingSpot findBySensorId(String sensorId);
-    //ParkingSpot findBySensorId(String sensorId);
 }
 

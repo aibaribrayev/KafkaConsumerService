@@ -77,15 +77,6 @@ public class ParkingServiceClient {
             return;
         }
 
-//        RequestBody body = new MultipartBody.Builder()
-//                .setType(MultipartBody.FORM)
-//                .addFormDataPart("parkingSpotNumber", parkingSpot.getSpotNumber())
-//                .addFormDataPart("startTime", String.valueOf(parkingSpot.getStartTime()))
-//                .addFormDataPart("endTime", String.valueOf(parkingSpot.getEndTime()))
-//                .addFormDataPart("price", String.valueOf(price))
-//                .addFormDataPart("carNumber", parkingSpot.getCurrentCarNumber())
-//                .addFormDataPart("paid", "false")
-//                .build();
         MediaType mediaType = MediaType.parse("application/json");
         RequestBody body = RequestBody.create(mediaType, "{"
                 + "\"parkingSpotNumber\": \"" + parkingSpot.getSpotNumber() + "\","

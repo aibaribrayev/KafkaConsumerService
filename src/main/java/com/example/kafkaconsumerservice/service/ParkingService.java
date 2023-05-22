@@ -21,9 +21,4 @@ public interface ParkingService {
     List<ParkingSpot> getNearbyAvailableSpots(double latitude, double longitude, double radius);
 
     void deleteParkingSpot(Long id);
-
-//    List<ParkingHistory> getParkingHistory(long userId);
-//    List<ParkingViolation> getViolations(long userId);
-//    //boolean payParkingFee(long parkingSpotId, PaymentMethod paymentMethod);
-
 }
