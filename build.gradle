@@ -46,6 +46,11 @@ protobuf {
     }
 }
 
+bootBuildImage {
+    imageName = 'yerasyl/kafkaconsumer'
+    pullPolicy = 'IF_NOT_PRESENT'
+}
+
 tasks.named('test') {
     useJUnitPlatform()
 }
