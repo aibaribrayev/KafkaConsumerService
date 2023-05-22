@@ -3,10 +3,11 @@ package com.example.kafkaconsumerservice.service;
 import com.example.kafkaconsumerservice.ParkingSpotNotFoundException;
 import com.example.kafkaconsumerservice.client.ParkingServiceClient;
 import com.example.kafkaconsumerservice.grpc.ParkingSessionServiceImpl;
+import com.example.kafkaconsumerservice.grpc.ParkingSpotOuterClass;
+import com.example.kafkaconsumerservice.grpc.ParkingSpotServiceImpl;
 import com.example.kafkaconsumerservice.model.ParkingSession;
 import com.example.kafkaconsumerservice.respository.ParkingSpotRepository;
 import com.example.kafkaconsumerservice.model.ParkingSpot;
-import com.example.kafkaconsumerservice.socket.ParkingWebSocketHandler;
 import com.example.kafkaconsumerservice.violation.ParkingViolationService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -25,6 +26,8 @@ public class ParkingServiceImpl implements ParkingService {
     private ParkingViolationService parkingViolationService;
     @Autowired
     private ParkingSessionServiceImpl parkingSessionService;
+    @Autowired
+    private ParkingSpotServiceImpl parkingSpotServiceImpl;
 
     @Autowired
     public ParkingServiceImpl(ParkingSpotRepository parkingSpotRepository) {
@@ -188,6 +191,36 @@ public class ParkingServiceImpl implements ParkingService {
                 parkingViolationService.addPaymentViolation(spot);
             }
         }
+    }
+
+    @Override
+    public void checkGrpcConnection(ParkingSpot parkingSpot) {
+        ParkingSpotOuterClass.ParkingSpot grpcParkingSpot = convertToGrpcParkingSpot(parkingSpot);
+        parkingSpotServiceImpl.addParkingSpot(grpcParkingSpot);
+    }
+    private ParkingSpotOuterClass.ParkingSpot convertToGrpcParkingSpot(ParkingSpot parkingSpot) {
+        // Преобразование java.time.LocalDateTime в строку формата ISO-8601
+        DateTimeFormatter formatter = DateTimeFormatter.ISO_DATE_TIME;
+        String startTime = parkingSpot.getStartTime() != null ? parkingSpot.getStartTime().format(formatter) : "";
+        String endTime = parkingSpot.getEndTime() != null ? parkingSpot.getEndTime().format(formatter) : "";
+        Long currentUserId = parkingSpot.getCurrentUserId() != null ? parkingSpot.getCurrentUserId() : -1L;
+        String currentCarNumber = parkingSpot.getCurrentCarNumber() != null ? parkingSpot.getCurrentCarNumber() : "";
+
+        // Здесь преобразуйте parkingSpot в ParkingSpotOuterClass.ParkingSpot
+        ParkingSpotOuterClass.ParkingSpot grpcParkingSpot = ParkingSpotOuterClass.ParkingSpot.newBuilder()
+                .setId(parkingSpot.getId())
+                .setSensorId(parkingSpot.getSensorId())
+                .setIsOccupied(parkingSpot.getIsOccupied())
+                .setSpotNumber(parkingSpot.getSpotNumber())
+                .setStartTime(startTime)
+                .setEndTime(endTime)
+                .setLatitude(parkingSpot.getLatitude())
+                .setLongitude(parkingSpot.getLongitude())
+                .setCurrentUserId(currentUserId)
+                .setCurrentCarNumber(currentCarNumber)
+                .build();
+
+        return grpcParkingSpot;
     }
 }
 
