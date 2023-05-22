@@ -12,8 +12,10 @@ message ParkingSession {
   string parkingSpotNumber = 1;
   string startTime = 2;
   string endTime = 3;
-  double price = 4;
-  bool isPaid = 5;
+  string carNumber = 4;
+  int64 userId = 5;
+  double price = 6;
+  bool isPaid = 7;
 }
 
 message StreamRequest {

@@ -10,9 +10,8 @@ public class ParkingSession {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    @ManyToOne
-    @JoinColumn(name = "user_id")
-    private User user;
+    @Column
+    private Long userId;
     @Column
     private String parkingSpotNumber;
     @Column
@@ -20,14 +19,18 @@ public class ParkingSession {
     @Column
     private LocalDateTime endTime;
     @Column
+    private String carNumber;
+    @Column
     private double price;
     @Column
     private boolean isPaid;
 
-    public ParkingSession(String parkingSpotNumber, LocalDateTime startTime, LocalDateTime endTime){
+    public ParkingSession(String parkingSpotNumber, LocalDateTime startTime, LocalDateTime endTime, Long userId, String carNumber){
         this.parkingSpotNumber = parkingSpotNumber;
         this.startTime = startTime;
         this.endTime = endTime;
+        this.userId = userId;
+        this.carNumber = carNumber;
         price = (endTime.getMinute() - startTime.getMinute())*100/60;
     }
 
@@ -47,10 +50,6 @@ public class ParkingSession {
         return parkingSpotNumber;
     }
 
-    public User getUser() {
-        return user;
-    }
-
     public double getPrice() {
         return price;
     }
@@ -64,5 +63,17 @@ public class ParkingSession {
     }
     public boolean isPaid() {
         return isPaid;
+    }
+
+    public String getCarNumber() {
+        return carNumber;
+    }
+
+    public Long getUserId() {
+        return userId;
+    }
+
+    public void setUserId(Long userId) {
+        this.userId = userId;
     }
 }

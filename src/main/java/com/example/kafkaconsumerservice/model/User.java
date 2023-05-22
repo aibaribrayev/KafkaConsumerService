@@ -24,16 +24,10 @@ public class User{
     @Column(name = "car")
     private List<String> cars;
 
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<ParkingSession> parkingHistory;
-
     public Long getId() {
         return id;
     }
 
-    public List<ParkingSession> getParkingHistory() {
-        return parkingHistory;
-    }
 
     public String getPhone() {
         return phone;
@@ -47,9 +41,6 @@ public class User{
         return fullName;
     }
 
-    public void setParkingHistory(List<ParkingSession> parkingHistory) {
-        this.parkingHistory = parkingHistory;
-    }
     public User(Long id, String phone, String fullName, List<String> cars) {//, List<ParkingHistory> parkingHistory) {
         this.id = id;
         this.phone = phone;

@@ -82,7 +82,9 @@ public class ParkingServiceImpl implements ParkingService {
             //Set history
             //reset all values
             //сокет с историей парковок
-            ParkingSession parkingSession = new ParkingSession(parkingSpot.getSpotNumber(), parkingSpot.getStartTime(), parkingSpot.getEndTime());
+            ParkingSession parkingSession = new ParkingSession(parkingSpot.getSpotNumber(),
+                    parkingSpot.getStartTime(), parkingSpot.getEndTime(),
+                    parkingSpot.getCurrentUserId(), parkingSpot.getCurrentCarNumber());
             com.example.parking.ParkingSession grpcParkingSession = convertToGrpcParkingSession(parkingSession);
             parkingSessionService.addParkingSession(grpcParkingSession);
         }
@@ -100,6 +102,8 @@ public class ParkingServiceImpl implements ParkingService {
                 .setParkingSpotNumber(parkingSession.getParkingSpotNumber())
                 .setStartTime(startTime)
                 .setEndTime(endTime)
+                .setCarNumber(parkingSession.getCarNumber())
+                .setUserId(parkingSession.getUserId())
                 .setPrice(parkingSession.getPrice())
                 .setIsPaid(parkingSession.isPaid())
                 .build();
