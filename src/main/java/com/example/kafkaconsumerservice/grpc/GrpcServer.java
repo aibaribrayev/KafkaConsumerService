@@ -1,4 +1,4 @@
-package com.example.kafkaconsumerservice;
+package com.example.kafkaconsumerservice.grpc;
 
 import io.grpc.Server;
 import io.grpc.ServerBuilder;
@@ -12,9 +12,11 @@ public class GrpcServer {
     private Server server;
 
     private final ParkingSpotServiceImpl parkingSpotService;
+    private final ParkingSessionServiceImpl parkingSessionService;
 
-    public GrpcServer(ParkingSpotServiceImpl parkingSpotService) {
+    public GrpcServer(ParkingSpotServiceImpl parkingSpotService, ParkingSessionServiceImpl parkingSessionService) {
         this.parkingSpotService = parkingSpotService;
+        this.parkingSessionService = parkingSessionService;
     }
 
     @PostConstruct
@@ -23,6 +25,7 @@ public class GrpcServer {
         int port = 9090;
         server = ServerBuilder.forPort(port)
                 .addService(parkingSpotService)  // Добавляем сервис
+                .addService(parkingSessionService)
                 .build()
                 .start();
 

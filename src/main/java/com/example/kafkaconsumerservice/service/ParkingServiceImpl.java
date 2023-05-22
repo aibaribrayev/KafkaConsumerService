@@ -2,6 +2,7 @@ package com.example.kafkaconsumerservice.service;
 
 import com.example.kafkaconsumerservice.ParkingSpotNotFoundException;
 import com.example.kafkaconsumerservice.client.ParkingServiceClient;
+import com.example.kafkaconsumerservice.grpc.ParkingSessionServiceImpl;
 import com.example.kafkaconsumerservice.model.ParkingSession;
 import com.example.kafkaconsumerservice.respository.ParkingSpotRepository;
 import com.example.kafkaconsumerservice.model.ParkingSpot;
@@ -12,6 +13,7 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -22,7 +24,7 @@ public class ParkingServiceImpl implements ParkingService {
     @Autowired
     private ParkingViolationService parkingViolationService;
     @Autowired
-    private ParkingWebSocketHandler parkingWebSocketHandler;
+    private ParkingSessionServiceImpl parkingSessionService;
 
     @Autowired
     public ParkingServiceImpl(ParkingSpotRepository parkingSpotRepository) {
@@ -81,11 +83,30 @@ public class ParkingServiceImpl implements ParkingService {
             //reset all values
             //сокет с историей парковок
             ParkingSession parkingSession = new ParkingSession(parkingSpot.getSpotNumber(), parkingSpot.getStartTime(), parkingSpot.getEndTime());
-            parkingWebSocketHandler.sendPaymentDataUpdate(parkingSession);
+            com.example.parking.ParkingSession grpcParkingSession = convertToGrpcParkingSession(parkingSession);
+            parkingSessionService.addParkingSession(grpcParkingSession);
         }
         parkingSpot.resetParkingOccupancy();
         return parkingSpotRepository.save(parkingSpot);
     }
+    private com.example.parking.ParkingSession convertToGrpcParkingSession(ParkingSession parkingSession) {
+        // Преобразование java.time.LocalDateTime в строку формата ISO-8601
+        DateTimeFormatter formatter = DateTimeFormatter.ISO_DATE_TIME;
+        String startTime = parkingSession.getStartTime() != null ? parkingSession.getStartTime().format(formatter) : "";
+        String endTime = parkingSession.getEndTime() != null ? parkingSession.getEndTime().format(formatter) : "";
+
+        // Здесь преобразуйте parkingSession в ParkingSessionProto.ParkingSession
+        com.example.parking.ParkingSession grpcParkingSession = com.example.parking.ParkingSession.newBuilder()
+                .setParkingSpotNumber(parkingSession.getParkingSpotNumber())
+                .setStartTime(startTime)
+                .setEndTime(endTime)
+                .setPrice(parkingSession.getPrice())
+                .setIsPaid(parkingSession.isPaid())
+                .build();
+
+        return grpcParkingSession;
+    }
+
     @Override
     public List<ParkingSpot> getNearbyAvailableSpots(double latitude, double longitude, double radius) {
         List<ParkingSpot> allSpots = parkingSpotRepository.findAll();

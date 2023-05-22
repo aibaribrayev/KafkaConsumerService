@@ -1,12 +1,11 @@
 package com.example.kafkaconsumerservice.kafka;
 
 
-import com.example.kafkaconsumerservice.ParkingSpotServiceImpl;
+import com.example.kafkaconsumerservice.grpc.ParkingSpotServiceImpl;
 import com.example.kafkaconsumerservice.grpc.ParkingSpotOuterClass;
 import com.example.kafkaconsumerservice.model.ParkingSensor;
 import com.example.kafkaconsumerservice.model.ParkingSpot;
 import com.example.kafkaconsumerservice.service.ParkingService;
-import com.example.kafkaconsumerservice.socket.ParkingSpotWebSocketHandler;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.kafka.annotation.KafkaListener;

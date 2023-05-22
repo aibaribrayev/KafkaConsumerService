@@ -31,6 +31,30 @@ public class ParkingSession {
         price = (endTime.getMinute() - startTime.getMinute())*100/60;
     }
 
+    public ParkingSession() {
+
+    }
+
+    public LocalDateTime getEndTime() {
+        return endTime;
+    }
+
+    public LocalDateTime getStartTime() {
+        return startTime;
+    }
+
+    public String getParkingSpotNumber() {
+        return parkingSpotNumber;
+    }
+
+    public User getUser() {
+        return user;
+    }
+
+    public double getPrice() {
+        return price;
+    }
+
     public Long getId() {
         return id;
     }

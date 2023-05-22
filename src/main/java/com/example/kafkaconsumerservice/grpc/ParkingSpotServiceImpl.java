@@ -1,10 +1,9 @@
-package com.example.kafkaconsumerservice;
+package com.example.kafkaconsumerservice.grpc;
 
 import com.example.kafkaconsumerservice.grpc.ParkingSpotOuterClass;
 import com.example.kafkaconsumerservice.grpc.ParkingSpotServiceGrpc;
 
 import io.grpc.stub.StreamObserver;
-import net.devh.boot.grpc.server.service.GrpcService;
 import org.springframework.stereotype.Service;
 
 import java.util.concurrent.BlockingQueue;
