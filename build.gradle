@@ -47,7 +47,7 @@ protobuf {
 }
 
 bootBuildImage {
-    imageName = 'yerasyl/kafkaconsumer'
+    imageName = 'aibaribray/kafkaconsumer:docker'
     pullPolicy = 'IF_NOT_PRESENT'
 }
 
