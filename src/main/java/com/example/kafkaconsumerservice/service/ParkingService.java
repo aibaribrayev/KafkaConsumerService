@@ -19,6 +19,7 @@ public interface ParkingService {
     ParkingSpot stopParkingSession(Long sensorId);
     //double calculateParkingFee(String id, LocalDateTime startTime, LocalDateTime endTime);
     List<ParkingSpot> getNearbyAvailableSpots(double latitude, double longitude, double radius);
+    public List<ParkingSpot> getNearbyPossibleSpots(double latitude, double longitude, double radius);
 
     void deleteParkingSpot(Long id);
     public void checkGrpcConnection(ParkingSpot parkingSpot);

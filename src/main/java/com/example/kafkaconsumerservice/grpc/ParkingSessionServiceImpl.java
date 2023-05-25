@@ -7,29 +7,34 @@ import com.example.parking.StreamRequest;
 import io.grpc.stub.StreamObserver;
 import org.springframework.stereotype.Service;
 
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.LinkedBlockingQueue;
+import java.util.Iterator;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 @Service
 public class ParkingSessionServiceImpl extends ParkingSessionServiceGrpc.ParkingSessionServiceImplBase {
-    private final BlockingQueue<ParkingSession> parkingSessionQueue = new LinkedBlockingQueue<>();
+    private final ConcurrentLinkedQueue<StreamObserver<ParkingSession>> observers = new ConcurrentLinkedQueue<>();
 
     public void addParkingSession(ParkingSession parkingSession) {
-        parkingSessionQueue.add(parkingSession);
+        Iterator<StreamObserver<ParkingSession>> iterator = observers.iterator();
+        while (iterator.hasNext()) {
+            StreamObserver<ParkingSession> observer = iterator.next();
+            try {
+                observer.onNext(parkingSession);
+            } catch (Exception e) {
+                // Если произошла ошибка при отправке данных, удаляем observer из списка
+                // Необходимо отметить, что метод remove() итератора CopyOnWriteArrayList не поддерживается, поэтому вместо него используется observers.remove().
+                observers.remove(observer);
+            }
+        }
     }
 
     @Override
     public void streamParkingSessions(StreamRequest request, StreamObserver<ParkingSession> responseObserver) {
-        while (true) {
-            try {
-                ParkingSession parkingSession = parkingSessionQueue.take(); // Блокируется, пока не появится новый элемент.
-                responseObserver.onNext(parkingSession);
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-                responseObserver.onError(e);
-                break;
-            }
-        }
+        // Добавить observer в список при подключении нового клиента
+        observers.add(responseObserver);
+
+        // Если серверу нужно отключить соединение с клиентом, он может вызвать responseObserver.onCompleted();
+        // Если серверу нужно сообщить клиенту об ошибке, он может вызвать responseObserver.onError(t);
     }
 }
 
