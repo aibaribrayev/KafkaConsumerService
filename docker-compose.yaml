@@ -4,13 +4,13 @@ services:
     image: aibaribray/kafkaconsumer:docker
     ports:
       - "8085:8080"
-      - "9090:9090"
+#      - "9090:9090"
     depends_on:
       - database
-      - kafka
-    environment:
-      - KAFKA_BOOTSTRAP_SERVERS=kafka:9092   # Set the Kafka broker address
-      - KAFKA_CONSUMER_GROUP=parking-sensor-group  # Set your desired consumer group
+#      - kafka
+#    environment:
+#      - KAFKA_BOOTSTRAP_SERVERS=kafka:9092   # Set the Kafka broker address
+#      - KAFKA_CONSUMER_GROUP=parking-sensor-group  # Set your desired consumer group
   database:
     image: postgres:latest
     environment:
@@ -19,11 +19,13 @@ services:
       - POSTGRES_DB=parking_service
     ports:
       - "5435:5432"
+      - "9092:9092"
   kafka:
     image: confluentinc/cp-kafka:latest   # Use an official Kafka image
     environment:
-      - KAFKA_ADVERTISED_LISTENERS=PLAINTEXT://kafka:9092  # Set the Kafka listener address
-      - KAFKA_ZOOKEEPER_CONNECT=zookeeper:2181  # Set the ZooKeeper connection address
+      - KAFKA_ADVERTISED_LISTENERS=PLAINTEXT://209.38.249.233:9092
+#      - KAFKA_ADVERTISED_LISTENERS=PLAINTEXT://kafka:9092
+      - KAFKA_ZOOKEEPER_CONNECT=zookeeper:2181
       - KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR=1
     ports:
       - "9092:9092"  # Expose Kafka broker port
@@ -33,9 +35,9 @@ services:
     image: confluentinc/cp-zookeeper:latest   # Use an official ZooKeeper image
     environment:
       - ZOOKEEPER_CLIENT_PORT=2181  # Set the ZooKeeper client port
-  producer:
-    image: aibaribray/kafkaproducer:latest  # Replace with the image of your Kafka producer service
-    depends_on:
-      - kafka
-    environment:
-      - SPRING_KAFKA_BOOTSTRAP_SERVERS=kafka:9092  # Set the Kafka broker address for the producer service
+#  producer:
+#    image: aibaribray/kafkaproducer:latest  # Replace with the image of your Kafka producer service
+#    depends_on:
+#      - kafka
+#    environment:
+#      - SPRING_KAFKA_BOOTSTRAP_SERVERS=kafka:9092  # Set the Kafka broker address for the producer service
