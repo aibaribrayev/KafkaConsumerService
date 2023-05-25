@@ -130,6 +130,27 @@ public class ParkingServiceImpl implements ParkingService {
 
         return nearbyAvailableSpots;
     }
+    @Override
+    public List<ParkingSpot> getNearbyPossibleSpots(double latitude, double longitude, double radius) {
+        List<ParkingSpot> allSpots = parkingSpotRepository.findAll();
+        List<ParkingSpot> nearbyPossibleSpots = new ArrayList<>();
+
+        for (ParkingSpot spot : allSpots) {
+            if (spot.getCurrentUserId() == null && isOccupiedForDuration(spot.getStartTime())) {
+                double distance = calculateDistance(latitude, longitude, spot.getLatitude(), spot.getLongitude());
+                if (distance <= radius) {
+                    nearbyPossibleSpots.add(spot);
+                }
+            }
+        }
+
+        return nearbyPossibleSpots;
+    }
+    private boolean isOccupiedForDuration(LocalDateTime startTime) {
+        LocalDateTime currentTime = LocalDateTime.now();
+        LocalDateTime occupiedUntilTime = startTime.plusMinutes(10);
+        return currentTime.isBefore(occupiedUntilTime);
+    }
 
     private static double calculateDistance(double lat1, double lon1, double lat2, double lon2) {
         double earthRadius = 6371e3; // радиус Земли в метрах
@@ -224,24 +245,3 @@ public class ParkingServiceImpl implements ParkingService {
         return grpcParkingSpot;
     }
 }
-
-//    @Override
-//    public ParkingSpot updateParkingSpotStatus(String id, boolean isOccupied) {
-//        ParkingSpot parkingSpot = parkingSpotRepository.findById(Long.valueOf(id)).orElse(null);
-//
-//        if (parkingSpot != null) {
-//            parkingSpot.setOccupied(isOccupied);
-//            //parkingSpot.(LocalDateTime.now());
-//            return parkingSpotRepository.save(parkingSpot);
-//        }
-//        return null;
-//    }
-
-//    @Override
-//    public double calculateParkingFee(String id, LocalDateTime startTime, LocalDateTime endTime) {
-//        // Реализуйте расчет стоимости парковки в зависимости от времени начала и окончания.
-//        // Например, вы можете использовать фиксированную ставку за час.
-//        double hourlyRate = 2.0;
-//        long parkingDuration = Duration.between(startTime, endTime).toHours();
-//        return hourlyRate * parkingDuration;
-//    }
