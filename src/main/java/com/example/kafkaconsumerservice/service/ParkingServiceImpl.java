@@ -131,13 +131,6 @@ public class ParkingServiceImpl implements ParkingService {
         return nearbyAvailableSpots;
     }
 
-    @Override
-    public void deleteParkingSpot(Long id) {
-        ParkingSpot parkingSpot = parkingSpotRepository.findById(id)
-                .orElseThrow(() -> new ParkingSpotNotFoundException("User not found with id: " + id));
-        parkingSpotRepository.delete(parkingSpot);
-    }
-
     private static double calculateDistance(double lat1, double lon1, double lat2, double lon2) {
         double earthRadius = 6371e3; // радиус Земли в метрах
         double lat1Radians = Math.toRadians(lat1);
@@ -152,6 +145,14 @@ public class ParkingServiceImpl implements ParkingService {
 
         return earthRadius * c;
     }
+
+    @Override
+    public void deleteParkingSpot(Long id) {
+        ParkingSpot parkingSpot = parkingSpotRepository.findById(id)
+                .orElseThrow(() -> new ParkingSpotNotFoundException("User not found with id: " + id));
+        parkingSpotRepository.delete(parkingSpot);
+    }
+
     @Scheduled(fixedDelay = 60 * 1000) // Каждую минуту
     public void checkForSpotViolations() { // проверка занятости
         List<ParkingSpot> parkingSpots = getAllParkingSpots();
